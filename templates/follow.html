@@ -1,0 +1,24 @@
+{% extends "base.html" %} 
+{% block title %} Последние обновления автора {% endblock %}
+
+{% block content %}
+  <div class="container">
+    {% include "menu.html" with follow=True %}
+    <h1> Последние обновления автора</h1>
+      <!-- Вывод ленты записей -->
+    {% load cache %}
+    {% cache 20 follow_page %}
+    {% for follow in page %}
+      <a href="{% url 'profile' follow.author.username %}">
+        <strong class="d-block text-gray-dark">@{{ follow.author }}</strong>
+      </a>
+      {% endfor %}
+    {% endcache %}
+  </div>
+
+    <!-- Вывод паджинатора -->
+  {% if page.has_other_pages %}
+    {% include "paginator.html" with items=page paginator=paginator%}
+  {% endif %}
+
+{% endblock %}
