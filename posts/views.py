@@ -53,10 +53,12 @@ def profile(request, username):
             user=request.user, author=author
         ).exists()
     )
+    following_count = Follow.objects.all().count()
     context = {
         'author': author,
         'page': page,
-        'following': following
+        'following': following,
+        'following_count': following_count
     }
     return render(request, 'profile.html', context)
 
@@ -65,11 +67,13 @@ def post_view(request, username, post_id):
     post = get_object_or_404(Post, id=post_id, author__username=username)
     form = CommentForm(request.POST or None)
     comments = post.comments.all().order_by('-created')
+    following_count = Follow.objects.all().count()
     context = {
         'author': post.author,
         'post': post,
         'form': form,
         'comments': comments,
+        'following_count': following_count
     }
     return render(request, 'post.html', context)
 
@@ -102,17 +106,19 @@ def server_error(request):
 
 
 def add_comment(request, username, post_id):
+    post = get_object_or_404(Post, id=post_id, author__username=username)
     if not request.user:
         return redirect('login')
-    post = get_object_or_404(Post, id=post_id, author__username=username)
     form = CommentForm(request.POST or None)
     context = {'form': form, 'post': post}
     if not form.is_valid():
+        form = CommentForm()
         return render(request, 'comments.html', context)
     form.instance.author = get_object_or_404(
         User, username=request.user.username
     )
     comment = form.save(commit=False)
+    comment.author = request.user
     comment.post = post
     comment.save()
     return redirect('post', username=username, post_id=post_id)
