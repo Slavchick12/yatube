@@ -7,10 +7,16 @@ class PostModelTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.user = User.objects.create_user(username='TestUser')
         cls.post = Post.objects.create(
             text='Тестовый текст',
-            author=User.objects.create_user(username='TestUser'),
+            author=cls.user,
             group=Group.objects.create(),
+        )
+        cls.comment = Comment.objects.create(
+            post=cls.post,
+            text='Тестовый текст 1',
+            author=cls.user
         )
 
     def test_text_label_post(self):
@@ -29,6 +35,7 @@ class PostModelTest(TestCase):
         field_help_texts = {
             'text': 'Здесь Ваш текст',
             'group': 'Можете выбрать группу',
+            'image': 'Можете загрузить картинку',
         }
         for value, expected in field_help_texts.items():
             with self.subTest(value=value):
@@ -38,7 +45,7 @@ class PostModelTest(TestCase):
     def test_post_is_text_field(self):
         post = self.post
         expected_object_name = post.text[:15]
-        self.assertEquals(expected_object_name, str(post))
+        self.assertEquals(expected_object_name, str(self.post))
 
 
 class GroupModelTest(TestCase):
@@ -76,8 +83,9 @@ class GroupModelTest(TestCase):
                     Group._meta.get_field(value).help_text, expected)
 
     def test_group_is_text_field(self):
-        expected_object_name = self.group.title
-        self.assertEquals(expected_object_name, str(self.group))
+        group = self.group
+        expected_object_name = group.title
+        self.assertEquals(expected_object_name, str(group))
 
 
 class CommentModelTest(TestCase):
@@ -97,6 +105,18 @@ class CommentModelTest(TestCase):
 
     def test_text_label_comment(self):
         field_verboses = {
+            'author': 'автор',
+            'post': 'пост',
+            'text': 'текст',
+            'created': 'дата публикации',
+        }
+        for value, expected in field_verboses.items():
+            with self.subTest(value=value):
+                self.assertEqual(
+                    Comment._meta.get_field(value).verbose_name, expected)
+
+    def test_text_label_comment(self):
+        field_verboses = {
             'text': 'текст',
             'created': 'дата публикации'
         }
@@ -104,6 +124,20 @@ class CommentModelTest(TestCase):
             with self.subTest(value=value):
                 self.assertEqual(
                     Comment._meta.get_field(value).verbose_name, expected)
+
+    def test_help_text_group(self):
+        field_help_texts = {
+            'text': 'Здесь Ваш текст',
+        }
+        for value, expected in field_help_texts.items():
+            with self.subTest(value=value):
+                self.assertEqual(
+                    Comment._meta.get_field(value).help_text, expected)
+
+    def test_comment_is_text_field(self):
+        comment = self.comment
+        expected_object_name = comment.text[:15]
+        self.assertEquals(expected_object_name, str(self.comment))
 
 
 class FollowModelTest(TestCase):

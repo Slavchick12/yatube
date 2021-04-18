@@ -65,6 +65,7 @@ class PostFormTest(TestCase):
         super().tearDownClass()
 
     def setUp(self):
+        self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.author)
 
@@ -94,6 +95,12 @@ class PostFormTest(TestCase):
                 self.assertEqual(form_data['image'], self.image)
                 self.assertEqual(self.author, new_post.author)
         self.assertEqual(len(set_id), 1)
+        response2 = self.guest_client.post(
+            NEW_POST,
+            data=form_data,
+            follow=True,
+        )
+        print(response2)
 
     def test_post_edit(self):
         """ Проверка на изменение поста """
@@ -122,6 +129,7 @@ class PostFormTest(TestCase):
             form_fields = {
                 'text': forms.fields.CharField,
                 'group': forms.fields.ChoiceField,
+                'image': forms.ImageField
             }
             for value, expected in form_fields.items():
                 with self.subTest(value=value):
