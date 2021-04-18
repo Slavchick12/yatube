@@ -64,12 +64,10 @@ def profile(request, username):
 def post_view(request, username, post_id):
     post = get_object_or_404(Post, id=post_id, author__username=username)
     form = CommentForm(request.POST or None)
-    comments = post.comments.all().order_by('-created')
     context = {
         'author': post.author,
         'post': post,
         'form': form,
-        'comments': comments,
     }
     return render(request, 'post.html', context)
 

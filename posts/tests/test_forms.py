@@ -13,6 +13,7 @@ from django import forms
 
 INDEX = reverse('index')
 NEW_POST = reverse('new_post')
+LOGIN = reverse('login')
 
 
 class PostFormTest(TestCase):
@@ -78,6 +79,11 @@ class PostFormTest(TestCase):
             'group': self.group_2.id,
             'image': self.image
         }
+        response_guest = self.guest_client.post(
+            NEW_POST,
+            data=form_data,
+            follow=True,
+        )
         response = self.authorized_client.post(
             NEW_POST,
             data=form_data,
@@ -95,12 +101,7 @@ class PostFormTest(TestCase):
                 self.assertEqual(form_data['image'], self.image)
                 self.assertEqual(self.author, new_post.author)
         self.assertEqual(len(set_id), 1)
-        response2 = self.guest_client.post(
-            NEW_POST,
-            data=form_data,
-            follow=True,
-        )
-        print(response2)
+        self.assertRedirects(response_guest, LOGIN + '?next=' + NEW_POST)
 
     def test_post_edit(self):
         """ Проверка на изменение поста """
@@ -109,11 +110,17 @@ class PostFormTest(TestCase):
             'text': 'Тестовый текст (edit)',
             'group': self.group_2.id,
         }
+        response_guest = self.guest_client.post(
+            self.POST_EDIT,
+            data=form_data,
+            follow=True,
+        )
         response = self.authorized_client.post(
             self.POST_EDIT,
             data=form_data,
             follow=True,
         )
+        self.assertRedirects(response_guest, LOGIN + '?next=' + self.POST_EDIT)
         self.assertRedirects(response, self.POST)
         self.assertEqual(Post.objects.count(), post_count)
         post_edit = response.context['post']
