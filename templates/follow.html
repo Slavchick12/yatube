@@ -1,17 +1,15 @@
 {% extends "base.html" %} 
-{% block title %} Последние обновления автора {% endblock %}
+{% block title %} Последние обновления авторов {% endblock %}
 
 {% block content %}
   <div class="container">
     {% include "menu.html" with follow=True %}
-    <h1> Последние обновления автора</h1>
+    <h1> Последние обновления авторов </h1>
       <!-- Вывод ленты записей -->
     {% load cache %}
     {% cache 20 follow_page %}
-    {% for follow in page %}
-      <a href="{% url 'profile' follow.author.username %}">
-        <strong class="d-block text-gray-dark">@{{ follow.author }}</strong>
-      </a>
+      {% for post in page %}
+        {% include "post_item.html" with post=post %}
       {% endfor %}
     {% endcache %}
   </div>

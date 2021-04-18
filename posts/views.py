@@ -53,12 +53,10 @@ def profile(request, username):
             user=request.user, author=author
         ).exists()
     )
-    following_count = Follow.objects.all().count()
     context = {
         'author': author,
         'page': page,
         'following': following,
-        'following_count': following_count
     }
     return render(request, 'profile.html', context)
 
@@ -67,13 +65,11 @@ def post_view(request, username, post_id):
     post = get_object_or_404(Post, id=post_id, author__username=username)
     form = CommentForm(request.POST or None)
     comments = post.comments.all().order_by('-created')
-    following_count = Follow.objects.all().count()
     context = {
         'author': post.author,
         'post': post,
         'form': form,
         'comments': comments,
-        'following_count': following_count
     }
     return render(request, 'post.html', context)
 
@@ -105,6 +101,7 @@ def server_error(request):
     return render(request, "misc/500.html", status=500)
 
 
+@login_required
 def add_comment(request, username, post_id):
     post = get_object_or_404(Post, id=post_id, author__username=username)
     if not request.user:

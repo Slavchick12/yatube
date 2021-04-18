@@ -34,6 +34,10 @@ class GroupModelTest(TestCase):
             'post_edit',
             args=[cls.user.username, cls.post.id]
         )
+        cls.COMMENT = reverse(
+            'add_comment',
+            args=[cls.user.username, cls.post.id]
+        )
 
     def setUp(self):
         self.guest_client = Client()
@@ -50,9 +54,11 @@ class GroupModelTest(TestCase):
             [self.guest_client, self.POST, 200],
             [self.authorized_client, NEW_POST, 200],
             [self.authorized_client, self.POST_EDIT, 200],
+            [self.authorized_client, self.COMMENT, 200],
             [self.guest_client, NEW_POST, 302],
             [self.guest_client, self.POST_EDIT, 302],
             [self.authorized_client2, self.POST_EDIT, 302],
+            [self.guest_client, self.COMMENT, 302],
             [self.guest_client, '404', 404],
             [self.guest_client, 'group_posts/404', 404],
         ]

@@ -7,13 +7,16 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
 
-from posts.models import Comment, Group, Post, User
+from posts.models import Follow, Group, Post, User
 from posts.settings import POSTS_QUANTITY
 
 INDEX = reverse('index')
 NEW_POST = reverse('new_post')
 PROFILE = reverse('profile', args=['TestUser'])
 GROUP_POSTS = reverse('group_posts', args=['test-group'])
+FOLLOW_INDEX = reverse('follow_index')
+PROFILE_FOLLOW = reverse('profile_follow', args=['TestUser'])
+PROFILE_UNFOLLOW = reverse('profile_unfollow', args=['TestUser'])
 
 
 class ContextsTest(TestCase):
@@ -27,6 +30,8 @@ class ContextsTest(TestCase):
             description='test_description',
         )
         cls.user = User.objects.create_user(username='TestUser')
+        cls.follower = User.objects.create(username='TestUser2')
+        cls.unfollower = User.objects.create(username='TestUser3')
         small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
@@ -59,6 +64,10 @@ class ContextsTest(TestCase):
     def setUp(self):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        self.authorized_client_follower = Client()
+        self.authorized_client_follower.force_login(self.follower)
+        self.authorized_client_unfollower = Client()
+        self.authorized_client_unfollower.force_login(self.unfollower)
         self.my_cache = caches['default']
         self.my_cache.clear()
         self.my_cache.close()
@@ -66,15 +75,15 @@ class ContextsTest(TestCase):
     def test_pages_shows_correct_page_context(self):
         """Шаблоны сформированы с правильным контекстом."""
         URLS = [
-            INDEX,
-            GROUP_POSTS,
-            PROFILE,
-            self.POST
+            [INDEX, 'page'],
+            [GROUP_POSTS, 'page'],
+            [PROFILE, 'page'],
+            [self.POST, 'post'],
         ]
-        for url in URLS:
+        for url, context in URLS:
             with self.subTest(url=url):
                 response = self.authorized_client.get(url)
-                if url == self.POST:
+                if context == 'post':
                     post = response.context['post']
                 else:
                     self.assertEqual(
@@ -96,13 +105,31 @@ class ContextsTest(TestCase):
                     response.context['author'].username, self.user.username
                 )
 
-    def test_page_shows_correct_group_context(self):
-        """Шаблон сформирован с правильным контекстом 'group'."""
-        response = self.authorized_client.get(GROUP_POSTS)
-        group = response.context['group']
-        self.assertEqual(group.title, self.group.title)
-        self.assertEqual(group.slug, self.group.slug)
-        self.assertEqual(group.description, self.group.description)
+    def test_new_post_in_follow_index(self):
+        """ Новая запись пользователя появляется и не появляется в ленте """
+        self.authorized_client_follower.get(PROFILE_FOLLOW)
+        new_post = self.authorized_client.post(
+            reverse('new_post'),
+            {'text': 'Тест подписки'},
+            follow=True
+        )
+        response = self.authorized_client_follower.get(FOLLOW_INDEX)
+        response_unfollower = self.authorized_client_unfollower.get(
+            FOLLOW_INDEX)
+        self.assertIn(new_post.context['page'][0], response.context['page'])
+        self.assertNotIn(
+            new_post.context['page'][0],
+            response_unfollower.context['page']
+        )
+
+    def test_new_follow_(self):
+        """ Проверка подписки и отписки """
+        count_before_follow = Follow.objects.count()
+        self.authorized_client_follower.get(PROFILE_FOLLOW)
+        self.assertEqual(Follow.objects.count(), count_before_follow + 1)
+        count_later_follow = Follow.objects.count()
+        self.authorized_client_follower.get(PROFILE_UNFOLLOW)
+        self.assertEqual(Follow.objects.count(), count_later_follow - 1)
 
 
 class PaginatorViewsTest(TestCase):
@@ -140,34 +167,6 @@ class PaginatorViewsTest(TestCase):
                 self.assertLess(
                     len(response.context.get('page').object_list),
                     POSTS_QUANTITY + 1)
-
-
-class CommentViewsTest(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.user = User.objects.create_user(username='TestUser')
-        cls.post = Post.objects.create(
-            text='Тестовый текст',
-            author=cls.user,
-        )
-
-    def setUp(self):
-        self.guest_client = Client()
-        self.authorized_client.force_login(self.user)
-
-    def test_only_authorized_comment(self):
-        guest_comment = Comment.objects.create(
-            post=self.post,
-            author=self.guest_client,
-            text='NOT_AUTHORIZED'
-        )
-        print(guest_comment)
-        authorized_comment = Comment.objects.create(
-            post=self.post,
-            author=self.authorized_client,
-            text='AUTHORIZED')
-        print(authorized_comment)
 
 
 class CachesTest(TestCase):
