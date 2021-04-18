@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+  <main role="main" class="container">
+    <div class="row">
+      <div class="col-md-3 mb-3 mt-1">
+          <div class="card">
+            <div class="card-body">
+              <div class="h2">
+                {{ author.get_full_name }}
+              </div>
+              <div class="h3 text-muted">
+                <a href="{% url 'profile' username=author.username %}"><strong class="d-block text-gray-dark">{{ author.username }}</strong></a>
+              </div>
+            </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">
+                {% if following %}
+                  <a class="btn btn-lg btn-light" href="{% url 'profile_unfollow' author.username %}" role="button">Отписаться</a> 
+                {% else %}
+                  <a class="btn btn-lg btn-primary" href="{% url 'profile_follow' author.username %}" role="button">Подписаться</a>
+                {% endif %}
+                <div class="h6 text-muted">
+                  Подписчиков: {{ author.following.count }} <br />
+                  Подписан: {{ author.follower.count }}
+                </div>
+              </li>
+              <li class="list-group-item">
+                <div class="h6 text-muted">
+                  Записей: {{ author.posts.count }}
+                </div>
+              </li>
+            </ul>
+          </div>
+      </div>
+      <div class="col-md-9">
+        <!-- Начало блока с отдельным постом -->
+        {% for post in page %}
+          {% include "post_item.html" with post=post %}
+        {% endfor %}
+        <!-- Конец блока с отдельным постом -->
+        <!-- Остальные посты -->
+        {% if page.has_other_pages %}
+          {% include "paginator.html" with items=page paginator=paginator%}
+        {% endif %}
+      </div>
+    </div>
+  </main>
+{% endblock %}
