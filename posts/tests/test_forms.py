@@ -1,15 +1,14 @@
 import shutil
 import tempfile
 
+from django import forms
+from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.conf import settings
 
 from posts.forms import PostForm
 from posts.models import Group, Post, User
-from django import forms
-
 
 INDEX = reverse('index')
 NEW_POST = reverse('new_post')
@@ -93,6 +92,8 @@ class PostFormTest(TestCase):
         self.assertEqual(Post.objects.count(), post_count + 1)
         posts_id_updated = set(Post.objects.all().values_list('id', flat=True))
         set_id = posts_id_updated.difference(posts_id)
+        self.assertRedirects(response_guest, LOGIN + '?next=' + NEW_POST)
+        self.assertEqual(len(set_id), 1)
         if set_id != {}:
             for id in set_id:
                 new_post = Post.objects.get(id=id)
@@ -100,8 +101,6 @@ class PostFormTest(TestCase):
                 self.assertEqual(form_data['group'], new_post.group.id)
                 self.assertEqual(form_data['image'], self.image)
                 self.assertEqual(self.author, new_post.author)
-        self.assertEqual(len(set_id), 1)
-        self.assertRedirects(response_guest, LOGIN + '?next=' + NEW_POST)
 
     def test_post_edit(self):
         """ Проверка на изменение поста """

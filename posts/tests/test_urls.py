@@ -1,7 +1,7 @@
-from django.test import TestCase, Client
+from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Group, User, Post
+from posts.models import Group, Post, User
 
 INDEX = reverse('index')
 NEW_POST = reverse('new_post')

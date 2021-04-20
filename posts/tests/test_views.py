@@ -1,11 +1,11 @@
-import tempfile
 import shutil
+import tempfile
 
+from django.conf import settings
 from django.core.cache import caches
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.conf import settings
 
 from posts.models import Follow, Group, Post, User
 from posts.settings import POSTS_QUANTITY
