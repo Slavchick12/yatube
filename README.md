@@ -39,10 +39,4 @@ python3 manage.py runserver
 Детальное описание и примеры работы API проекта представлены в 
 документации: http://127.0.0.1:8000/redoc/ в формате ReDoc.
 Используется:
-Python 3, Django, PostgreSQL, Gunicorn, Nginx, Yandex.Cloud (Ubuntu 20.04 LTS), unittest
-© 2021 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Do
+Python 3, Django, PostgreSQL, Gunicorn, Nginx, Yandex.Cloud (Ubuntu 20.04 LTS), unittest.
