@@ -9,7 +9,7 @@
 git clone git@github.com:Slavchick12/yatube.git
 ```
 ```
-cd api_yatube
+cd yatube
 ```
 Cоздать и активировать виртуальное окружение:
 ```
