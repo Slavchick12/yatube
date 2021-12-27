@@ -36,7 +36,11 @@ python3 manage.py migrate
 python3 manage.py runserver
 ```
 ## Примеры использования API:
+```
 Детальное описание и примеры работы API проекта представлены в 
 документации: http://127.0.0.1:8000/redoc/ в формате ReDoc.
-Используется:
-Python 3, Django, PostgreSQL, Gunicorn, Nginx, Yandex.Cloud (Ubuntu 20.04 LTS), unittest.
+```
+## Используется:
+```
+Python 3.9, Django 2.2, PostgreSQL, Gunicorn, Nginx, Yandex.Cloud (Ubuntu 20.04 LTS), unittest.
+```
