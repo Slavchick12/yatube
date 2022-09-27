@@ -42,5 +42,5 @@ python3 manage.py runserver
 ```
 ## Используется:
 ```
-Python 3.9, Django 2.2, PostgreSQL, Gunicorn, Nginx, Yandex.Cloud (Ubuntu 20.04 LTS), unittest.
+Python 3.9, Django 2.2, unittest.
 ```
